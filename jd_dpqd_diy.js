@@ -6,14 +6,12 @@ cron 0 0 * * * jd_dpqd.js
 DPQDTK: token1&token2
 仓库不再提供token
 */
-let token = []
-if (process.env.DPQDTK) {
-  token = [...process.env.DPQDTK.split('&'),...token]
-}
-if (!token.length) {
-  console.log('无店铺签到token,不执行.需自备token:环境变DPQDTK: tk1&tk2. 详细说明请入群查看频道信息.')
-  return
-}
+let token = [
+	'4908AB0D78BDD0907524470B8E045C7A'
+	'173EB22121AD3A384E07CF5444F7CD0A'
+	'B1C0377C938DF83AFCBEA39E8E4C02D7'
+]
+
 const $ = new Env('店铺签到');
 
 const notify = $.isNode() ? require('./sendNotify') : '';
