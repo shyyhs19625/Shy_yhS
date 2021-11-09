@@ -1,8 +1,13 @@
 /*
   京东<热爱环游记>任务
   脚本执行时间过长，建议调低手机屏幕亮度，减少电量消耗和发热
-  20211105 V2.6
-  调整加购任务等待判断，避免提前进入下一步
+
+  已知问题：
+  Q：明明有任务，但是识别不出来就退出了
+  A：目前发现分身的应用有这种问题，可重启应用和脚本重进，一般即可解决
+
+  20211109 V2.9.1
+  修复互动种草城网络问题无法返回导致报错问题
 */
 Start();
 console.info("开始任务");
@@ -18,10 +23,11 @@ sleep(1000);
   参数1：启动的APP名称，如需手动，则填手动
   参数2：对应参数1的APP名称，是否是分身应用，0：正常应用，1：分身有术Pro内部分身，暂不支持其他分身应用（如是多开分身，可在参数1中直接填入分身应用APP名称即可）
   参数3：助力邀请，0：跳过助力邀请 1：助力邀请  关于<邀请码>：搜索关键字"邀请码"，按规则填入即可互相助力
-  参数4：是否入会，0：不执行入会任务 1：执行入会任务，遇到新入会店铺则退出脚本
+  参数4：是否入会，0：不执行入会任务 1：执行入会任务，遇到新入会店铺则退出任务 2：执行入会任务，遇到需入会店铺则返回，等待刷新别的店铺 3:执行入会任务，遇到需入会店铺，等待手动入会
  */
 //京东例子
 //Run("京东",0,0,2);home();
+//Run("京东",1,1,0);home();
 //手动例子
 Run("手动",0,0,0);home();
 console.info("结束任务");
@@ -59,7 +65,7 @@ function Run(LauchAPPName,IsSeparation,IsInvite,IsJoinMember) {
     if(IsSeparation == null){
         IsSeparation = 0 //0：正常应用 1：分身有术内部应用
     }if(IsJoinMember == null){
-        IsJoinMember = 0 //0：不执行入会任务 1：执行入会任务，遇到新入会店铺则退出脚本 2：执行入会任务，遇到需入会店铺则返回，等待刷新别的店铺
+        IsJoinMember = 0 //0：不执行入会任务 1：执行入会任务，遇到新入会店铺则退出脚本 2：执行入会任务，遇到需入会店铺则返回，等待刷新别的店铺 3:执行入会任务，遇到需入会店铺，等待手动入会
     }
     var IsSeparation_info=""
     var IsInvite_info=""
@@ -86,6 +92,8 @@ function Run(LauchAPPName,IsSeparation,IsInvite,IsJoinMember) {
         IsJoinMember_info ="有新入会店铺则退出脚本"
     } else if(IsJoinMember == 2){
         IsJoinMember_info ="有新入会店铺则返回，等待刷新别的店铺"
+    } else if(IsJoinMember == 3){
+        IsJoinMember_info ="有新入会店铺，等待手动入会"
     } else{
         IsJoinMember_info ="无效参数，改为默认值“不执行入会”"
         IsJoinMember = 0
@@ -435,6 +443,7 @@ function Run(LauchAPPName,IsSeparation,IsInvite,IsJoinMember) {
                 break;
             }
         }
+        img.recycle();//调用recycle回收
         if (!taskButton) {
             console.log("未找到可自动完成的任务，退出当前任务");
             console.log("互动任务需要手动完成");
@@ -510,28 +519,25 @@ function Run(LauchAPPName,IsSeparation,IsInvite,IsJoinMember) {
             taskButton.click();
             sleep(1000);
             console.log("等待进入商品列表……");
-            textContains("5个商品领汪汪币").waitFor();//当前页浏览加购5个商品领汪汪币|当前页点击浏览5个商品领汪汪币
-            let items = textContains("5个商品").findOne();
+            textEndsWith("5个商品领汪汪币").waitFor();//当前页浏览加购5个商品领汪汪币|当前页点击浏览5个商品领汪汪币
+            let items = textEndsWith("5个商品领汪汪币").findOne();
             for (let i = 0; i < 5; i++) {
                 if (cart) {
                     console.log("加购并浏览");
-                    if(!text("到货通知").exists()){
-                        items.parent().parent().child(2).child(i).child(5).click();
-                    } else{
-                        console.log("缺货，准备返回");
-                    }
+                    items.parent().parent().child(2).child(i).child(5).click();
                 } else {
                     console.log("浏览商品页");
-                    if(!text("到货通知").exists()){
-                        items.parent().parent().child(2).child(i).child(4).click();
-                    } else{
-                        console.log("缺货，准备返回");
-                    }
+                    items.parent().parent().child(2).child(i).child(4).click();
                 }
-                sleep(2000);
+                sleep(1000);
                 console.log("返回");
                 back();
                 sleep(2000);
+                while(!textEndsWith("5个商品领汪汪币").exists()){
+                    console.log("再次返回");
+                    back();
+                    sleep(2000);
+                }
                 if (i >= 4) {
                     break;
                 }
@@ -577,7 +583,11 @@ function Run(LauchAPPName,IsSeparation,IsInvite,IsJoinMember) {
                 }
                 else if(IsJoinMember == 1){
                     console.log("涉及个人隐私，请手动加入店铺会员或者忽略加入会员任务");
-                    break;
+                    return;
+                }
+                else if(IsJoinMember == 3){
+                    console.log("当前店铺未入会，等待手动");
+                    sleep(8000);
                 }
             }
             else{
@@ -593,10 +603,15 @@ function Run(LauchAPPName,IsSeparation,IsInvite,IsJoinMember) {
                     for(var i = 0; i < 5; i++){
                         console.log("第"+(i+1)+"次浏览店铺");
                         textContains("/5)").findOnce().parent().parent().child(2).click();
-                        sleep(3000);
+                        sleep(1000);
                         console.log("返回");
                         back();
-                        sleep(1000);
+                        sleep(2000);
+                        while(!text("互动种草城").exists()){
+                            console.log("再次返回");
+                            back();
+                            sleep(2000);
+                        }
                     }
                 }
             }
