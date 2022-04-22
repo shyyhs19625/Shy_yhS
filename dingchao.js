@@ -7,7 +7,7 @@ const jsname = "盯潮签到";
 const $ = Env(jsname);
 const notify = $.isNode() ? require('./sendNotify') : '';
 const Notify = 1; //0为关闭通知，1为打开通知,默认为1
-const debug = 1; //0为关闭调试，1为打开调试,默认为0
+const debug = 0; //0为关闭调试，1为打开调试,默认为0
 //////////////////////
 //let dingchao = process.env.dingchao;
 let dingchao = ($.isNode() ? process.env.dingchao : $.getdata('dingchao')) || "";
@@ -43,17 +43,11 @@ let msg = '';
 			let num = index + 1
 			console.log(`\n========= 开始【第 ${num} 个账号】=========\n`)
 
-			data = dingchaoArr[index].split('&');      // 这里是分割你每个账号的每个小项   
+			data = dingchaoArr[index].split('&');
 
 			if (debug) {
 				console.log(`\n 【debug】 这是你第 ${num} 账号信息:\n ${data}\n`);
 			}
-
-
-			// 这里是开始做任务    需要注意的点
-			// 	1. await只能运行与async函数中
-			// 	2. 函数的名字不可以相同
-			//      3. 不够可以自己复制
 
 			console.log('开始 签到');
 			await signin();
@@ -99,11 +93,9 @@ let msg = '';
 				let result = JSON.parse(data);
 				if (result.err == false) {
 
-                    console.log(`【本日签到成功】 🎉`)
-                    msg += `\n【本日签到成功】 🎉`
+                    			console.log(`【本日签到成功】  \n账号名:${result.res.nickName}\n今天抽签结果::${result.res.fortuneType}🎉\n获得:${result.res.thisTimeCreditsStr}\现有积分:${result.res.userCredit}分🎉`)
+                   				msg += `\n【本日签到成功】 \n账号名:${result.res.nickName}\n今天抽签结果::${result.res.fortuneType}🎉\n获得:${result.res.thisTimeCreditsStr}\现有积分:${result.res.userCredit}分🎉`
 
-					//console.log(`【签到成功】${result.data.days} 🎉 `)
-					//msg += `\n【签到成功】${result.data.days} 🎉` 
 
 				} else if (result.code === 500) {
 
