@@ -93,8 +93,8 @@ let msg = '';
 				let result = JSON.parse(data);
 				if (result.err == false) {
 
-                    			console.log(`【本日签到成功】  \n账号名:${result.res.nickName}\n今天抽签结果::${result.res.fortuneType}🎉\n获得:${result.res.thisTimeCreditsStr}\现有积分:${result.res.userCredit}分🎉`)
-                   				msg += `\n【本日签到成功】 \n账号名:${result.res.nickName}\n今天抽签结果::${result.res.fortuneType}🎉\n获得:${result.res.thisTimeCreditsStr}\现有积分:${result.res.userCredit}分🎉`
+                    			console.log(`【本日签到成功】  \n账号名:${result.res.nickName}\n今天抽签结果::${result.res.fortuneType}🎉\n获得:${result.res.thisTimeCreditsStr}\n现有积分:${result.res.userCredit}分🎉`)
+                   				msg += `\n【本日签到成功】 \n账号名:${result.res.nickName}\n今天抽签结果::${result.res.fortuneType}🎉\n获得:${result.res.thisTimeCreditsStr}\n现有积分:${result.res.userCredit}分🎉`
 
 
 				} else if (result.code === 500) {
